@@ -1,0 +1,7 @@
+pkg/*
+*.so
+*.o
+*.log
+Makefile
+*.bundle
+*.dSYM

@@ -1,0 +1,1 @@
+require "ssdeep_ruby_ext"
