@@ -1,8 +1,15 @@
 require 'rubygems'
 require 'rake'
+require 'rake/clean'
 require 'rake/testtask'
 require 'rake/gempackagetask'
 require 'rbconfig'
+
+CLEAN.include("**/*.bundle")
+CLEAN.include("ext/Makefile")
+CLEAN.include("ext/*.dSYM")
+CLEAN.include("ext/*.log")
+CLEAN.include("ext/*.o")
 
 task :default => [:compile, :test]
 
@@ -20,7 +27,7 @@ file "lib/#{extension_name}" => ['lib', "ext/#{extension_name}"] do
   cp "ext/#{extension_name}", "lib/#{extension_name}"
 end
 
-task :compile => ["lib/#{extension_name}"]
+task :compile => [:clean, "lib/#{extension_name}"]
 
 file "ext/#{extension_name}" => FileList["ext/Makefile", "ext/*.c", "ext/*.h"] do
   Dir.chdir("ext") do
@@ -35,15 +42,15 @@ file "ext/Makefile" => "ext/extconf.rb" do
 end
 
 ## GEM ##
-NAME = "ssdeep-ruby"
+NAME = "ssdeep_ruby"
 SUMMARY = "Ruby bindings for ssdeep"
 GEM_VERSION = "0.1"
 
 spec = Gem::Specification.new do |s|
   s.name = NAME
   s.summary = s.description = SUMMARY
-  s.author = "Wieck Media"
-  s.email = "dev@wieck.com"
+  s.author = "Bernerd Schaefer"
+  s.email = "bj.schaefer@gmail.com"
   s.version = GEM_VERSION
   s.platform = Gem::Platform::RUBY
   s.require_path = 'lib'
@@ -58,12 +65,4 @@ end
 desc "Install #{NAME} as a gem"
 task :install => [:repackage] do
   sh %{gem install pkg/#{NAME}-#{GEM_VERSION}}
-end
-
-desc "Publish #{NAME} gem"
-task :publish do
-  STDOUT.print "Publishing gem... "
-  STDOUT.flush
-  `ssh gems@able.wieck.com "cd ssdeep_ruby && git pull &> /dev/null && rake repackage &> /dev/null && cp pkg/* ../site/gems && cd ../site && gem generate_index"`
-  STDOUT.puts "done"
 end

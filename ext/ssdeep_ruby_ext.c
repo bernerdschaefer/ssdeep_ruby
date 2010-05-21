@@ -1,6 +1,4 @@
 #include <ruby.h>
-#include <rubyio.h>
-#include <version.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <fuzzy.h>
@@ -8,10 +6,22 @@
 #define ID_CONST_GET rb_intern("const_get")
 #define CONST_GET(scope, constant) (rb_funcall(scope, ID_CONST_GET, 1, rb_str_new2(constant)))
 
+#ifdef HAVE_RUBY_ENCODING_H
+
+#include <ruby/io.h>
+#define SSDEEP_RUBY_FILE_PATH(file) (RSTRING_PTR(RFILE(rb_io_taint_check(file))->fptr->pathv));
+
+#else
+
+#include <rubyio.h>
+#define SSDEEP_RUBY_FILE_PATH(file) (RFILE(rb_io_taint_check(file))->fptr->path);
+
+#endif
+
 static VALUE cString_fuzzy_hash(VALUE self) {
   char *hash = (char *) malloc(FUZZY_MAX_RESULT);
 
-  fuzzy_hash_buf((unsigned char *) RSTRING(self)->ptr, RSTRING(self)->len, hash);
+  fuzzy_hash_buf((unsigned char *) RSTRING_PTR(self), RSTRING_LEN(self), hash);
 
   return rb_str_new(hash, strlen(hash));
 }
@@ -20,22 +30,18 @@ static VALUE cString_fuzzy_compare(VALUE self, VALUE other) {
   char *self_hash = (char *) malloc(FUZZY_MAX_RESULT);
   char *other_hash = (char *) malloc(FUZZY_MAX_RESULT);
 
-  fuzzy_hash_buf((unsigned char *) RSTRING(self)->ptr, RSTRING(self)->len, self_hash);
-  fuzzy_hash_buf((unsigned char *) RSTRING(other)->ptr, RSTRING(other)->len, other_hash);
+  fuzzy_hash_buf((unsigned char *) RSTRING_PTR(self), RSTRING_LEN(self), self_hash);
+  fuzzy_hash_buf((unsigned char *) RSTRING_PTR(other), RSTRING_LEN(other), other_hash);
 
   return INT2NUM(fuzzy_compare(self_hash, other_hash));
 }
 
 static VALUE cFile_fuzzy_hash(VALUE self) {
   char *hash = (char *) malloc(FUZZY_MAX_RESULT);
-  rb_io_t *fptr;
-  FILE *file;
+  char *path;
 
-  fptr = RFILE(rb_io_taint_check(self))->fptr;
-
-  file = fopen(fptr->path, "r");
-
-  fuzzy_hash_file(file, hash);
+  path = SSDEEP_RUBY_FILE_PATH(self);
+  fuzzy_hash_filename(path, hash);
 
   return rb_str_new(hash, strlen(hash));
 }

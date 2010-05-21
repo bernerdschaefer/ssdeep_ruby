@@ -5,3 +5,5 @@ pkg/*
 Makefile
 *.bundle
 *.dSYM
+tags
+.rvmrc
