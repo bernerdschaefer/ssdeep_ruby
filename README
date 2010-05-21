@@ -1,0 +1,22 @@
+ssdeep_ruby provides ruby bindings for ssdeep, a library for computing fuzzy hashes on strings and files.
+
+Requirements
+============
+
+You will need to download ssdeep (tested with 2.1 and 2.5) from http://ssdeep.sourceforge.net/ and then configure and make as usual.
+
+Usage
+=====
+
+ssdeep_ruby exposed two instance methods on String and one instance method on File, which can be used as follows:
+
+  >> "one two".fuzzy_hash
+  => "3:7n:7"
+
+  >> File.read("README").fuzzy_compare("one two")
+  => 0
+  >> File.read("README").fuzzy_compare(File.read("README"))
+  => 100
+
+  >> File.new("README").fuzzy_hash
+  => "12:huqlnQNwzCHX1Q2Ev+ihQImWYHwG5fyYoGaZ0NHV4qS49CZiEdYn:B2a1GZQGgYoGaZ0NK4qBYn"
