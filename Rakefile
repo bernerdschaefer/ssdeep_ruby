@@ -44,7 +44,7 @@ end
 ## GEM ##
 NAME = "ssdeep_ruby"
 SUMMARY = "Ruby bindings for ssdeep"
-GEM_VERSION = "0.1"
+GEM_VERSION = "1.0"
 
 spec = Gem::Specification.new do |s|
   s.name = NAME
